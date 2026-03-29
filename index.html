@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,7 +70,7 @@ button {
 <div id="ui">
   <button onclick="setLang('en')">EN</button>
   <button onclick="setLang('es')">ES</button>
-  <div id="text">Move the musician</div>
+  <div id="text"></div>
 </div>
 
 <div id="player"></div>
@@ -88,21 +88,54 @@ let x = window.innerWidth / 2;
 let y = window.innerHeight / 2;
 let speed = 20;
 
-let lang = "en";
+/* =========================
+   LANGUAGE SYSTEM (AUTO)
+========================= */
+
+let lang = detectLanguage();
+
+function detectLanguage(){
+  // 1. saved preference
+  const saved = localStorage.getItem("lang");
+  if(saved) return saved;
+
+  // 2. URL (Wix tabs /es /en)
+  if(window.location.href.includes("/es")) return "es";
+  if(window.location.href.includes("/en")) return "en";
+
+  // 3. browser language
+  if(navigator.language.startsWith("es")) return "es";
+
+  // default
+  return "en";
+}
 
 function setLang(l){
   lang = l;
+  localStorage.setItem("lang", l);
   updateText();
 }
 
-function updateText(){
-  const t = document.getElementById("text");
-  if(lang === "en"){
-    t.innerText = "Move the musician";
-  } else {
-    t.innerText = "Mueve al músico";
+/* =========================
+   TEXTS
+========================= */
+
+const TEXTS = {
+  en: {
+    move: "Move the musician"
+  },
+  es: {
+    move: "Mueve al músico"
   }
+};
+
+function updateText(){
+  document.getElementById("text").innerText = TEXTS[lang].move;
 }
+
+/* =========================
+   MOVEMENT
+========================= */
 
 function move(dir){
   if(dir === "left") x -= speed;
@@ -114,7 +147,10 @@ function move(dir){
   player.style.top = y + "px";
 }
 
-/* Keyboard support */
+/* =========================
+   KEYBOARD
+========================= */
+
 document.addEventListener("keydown", e => {
   if(e.key === "ArrowLeft") move("left");
   if(e.key === "ArrowRight") move("right");
@@ -122,11 +158,15 @@ document.addEventListener("keydown", e => {
   if(e.key === "ArrowDown") move("down");
 });
 
-/* Prevent scroll on mobile */
+/* =========================
+   MOBILE SAFARI FIX
+========================= */
+
 document.addEventListener("touchmove", function(e){
   e.preventDefault();
 }, { passive:false });
 
+/* INIT */
 updateText();
 </script>
 
